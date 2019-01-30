@@ -82,12 +82,16 @@ class ResidualBlock(nn.Module):
 
         self.layer2 = nn.Sequential(
             nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU()
+            nn.BatchNorm2d(out_ch)
         )
 
+        self.relu = nn.ReLU()
+
         if first_stride != 1:
-            self.downsample = nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0)
+            self.downsample = nn.Sequential(
+                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0),
+                nn.BatchNorm2d(out_ch)
+            )
         self.first_stride = first_stride
 
     def forward(self, x):
@@ -97,7 +101,7 @@ class ResidualBlock(nn.Module):
         if self.first_stride != 1:
             x = self.downsample(x)
 
-        return h + x
+        return self.relu(h + x)
 
 
 class ResidualBottleneckBlock(nn.Module):
@@ -119,12 +123,16 @@ class ResidualBottleneckBlock(nn.Module):
 
         self.layer3 = nn.Sequential(
             nn.Conv2d(intermediate_ch, out_ch, kernel_size=1, stride=1, padding=0),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU()
+            nn.BatchNorm2d(out_ch)
         )
 
+        self.relu = nn.ReLU()
+
         if first_stride != 1:
-            self.downsample = nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0)
+            self.downsample = nn.Sequential(
+                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0),
+                nn.BatchNorm2d(out_ch)
+            )
         self.first_stride = first_stride
 
     def forward(self, x):
@@ -135,7 +143,7 @@ class ResidualBottleneckBlock(nn.Module):
         if self.first_stride != 1:
             x = self.downsample(x)
 
-        return h + x
+        return self.relu(h + x)
 
 
 class ResNeXtBlock(nn.Module):
@@ -157,12 +165,16 @@ class ResNeXtBlock(nn.Module):
 
         self.layer3 = nn.Sequential(
             nn.Conv2d(intermediate_ch, out_ch, kernel_size=1, stride=1, padding=0),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU()
+            nn.BatchNorm2d(out_ch)
         )
 
+        self.relu = nn.ReLU()
+
         if first_stride != 1:
-            self.downsample = nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0)
+            self.downsample = nn.Sequential(
+                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0),
+                nn.BatchNorm2d(out_ch)
+            )
         self.first_stride = first_stride
 
     def forward(self, x):
@@ -173,7 +185,7 @@ class ResNeXtBlock(nn.Module):
         if self.first_stride != 1:
             x = self.downsample(x)
 
-        return h + x
+        return self.relu(h + x)
 
 
 class XceptionBlock(nn.Module):
@@ -198,11 +210,15 @@ class XceptionBlock(nn.Module):
             # depth-wise
             nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=out_ch),
             nn.BatchNorm2d(out_ch),
-            nn.ReLU()
         )
 
+        self.relu = nn.ReLU()
+
         if first_stride != 1:
-            self.downsample = nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0)
+            self.downsample = nn.Sequential(
+                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0),
+                nn.BatchNorm2d(out_ch)
+            )
         self.first_stride = first_stride
 
     def forward(self, x):
@@ -212,7 +228,7 @@ class XceptionBlock(nn.Module):
         if self.first_stride != 1:
             x = self.downsample(x)
 
-        return h + x
+        return self.relu(h + x)
 
 
 class CLCBlock(nn.Module):
