@@ -231,6 +231,7 @@ class XceptionBlock(nn.Module):
         return self.relu(h + x)
 
 
+'''
 class CLCBlock(nn.Module):
     def __init__(self, in_ch, out_ch, first_stride=1):
         super(CLCBlock, self).__init__()
@@ -271,21 +272,95 @@ class CLCBlock(nn.Module):
         )
 
     def forward(self, x):
+        print(0, x.shape)
         h_list = []
         for inplaned_layer in self.inplaned_layers1:
             h_list.append(inplaned_layer(x))
+        print(1, h_list[0].shape)
 
         h = torch.cat(h_list, dim=1)
+        print(2, h.shape)
         h = self.gruop_layer1(h)
+        print(3, h.shape)
 
         h_list = []
         for inplaned_layer in self.inplaned_layers2:
             h_list.append(inplaned_layer(h))
+        print(4, h_list[0].shape)
 
         h = torch.cat(h_list, dim=1)
+        print(5, h.shape)
+        h = self.gruop_layer2(h)
+        print(6, h.shape)
+        print()
+
+        return h
+'''
+class CLCBlock(nn.Module):
+    def __init__(self, in_ch, out_ch, first_stride=1):
+        super(CLCBlock, self).__init__()
+
+        if out_ch == 128:
+            g1, g2 = 32, 4
+        elif out_ch == 256:
+            g1, g2 = 64, 4
+        elif out_ch == 512:
+            g1, g2 = 64, 8
+        elif out_ch == 1024:
+            g1, g2 = 128, 8
+
+        first_g1 = g1 // first_stride
+        self.inplaned_layer1 = nn.Conv2d(in_ch, in_ch, kernel_size=3, stride=first_stride, padding=1, groups=first_g1)
+
+        index = torch.arange(0, in_ch, g2)  # g2 = ch_per_group
+        self.index_list1 = []
+        for i in range(g2):
+            self.index_list1.append(index + i)
+
+        self.gruop_layer1 = nn.Sequential(
+            nn.BatchNorm2d(in_ch),
+            nn.ReLU(),
+            nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=1, padding=0, groups=g2),
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU()
+        )
+
+        self.inplaned_layer2 = nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=g1)
+
+        index = torch.arange(0, out_ch, g2)  # g2 = ch_per_group
+        self.index_list2 = []
+        for i in range(g2):
+            self.index_list2.append(index + i)
+
+        self.gruop_layer2 = nn.Sequential(
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU(),
+            nn.Conv2d(out_ch, out_ch, kernel_size=1, stride=1, padding=0, groups=g2),
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU()
+        )
+
+    def forward(self, x):
+        h = self.inplaned_layer1(x)
+
+        h_list = []
+        for index in self.index_list1:
+            h_list.append(h[:, index, :, :])
+        h = torch.cat(h_list, dim=1)
+
+        h = self.gruop_layer1(h)
+
+        h = self.inplaned_layer2(h)
+
+        h_list = []
+        for index in self.index_list2:
+            h_list.append(h[:, index, :, :])
+        h = torch.cat(h_list, dim=1)
+
         h = self.gruop_layer2(h)
 
         return h
+
 
 
 ################################################################
