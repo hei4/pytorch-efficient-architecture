@@ -312,10 +312,10 @@ class CLCBlock(nn.Module):
         first_g1 = g1 // first_stride
         self.inplaned_layer1 = nn.Conv2d(in_ch, in_ch, kernel_size=3, stride=first_stride, padding=1, groups=first_g1)
 
-        index = torch.arange(0, in_ch, g2)  # g2 = ch_per_group
+        # index = torch.arange(0, in_ch, g2)  # g2 = ch_per_group
         self.index_list1 = []
         for i in range(g2):
-            self.index_list1.append(index + i)
+            self.index_list1.append(list(range(i, in_ch, g2)))
 
         self.gruop_layer1 = nn.Sequential(
             nn.BatchNorm2d(in_ch),
@@ -327,10 +327,11 @@ class CLCBlock(nn.Module):
 
         self.inplaned_layer2 = nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=g1)
 
-        index = torch.arange(0, out_ch, g2)  # g2 = ch_per_group
+        #index = torch.arange(0, out_ch, g2)  # g2 = ch_per_group
         self.index_list2 = []
         for i in range(g2):
-            self.index_list2.append(index + i)
+            #self.index_list2.append(index + i)
+            self.index_list2.append(list(range(i, out_ch, g2)))
 
         self.gruop_layer2 = nn.Sequential(
             nn.BatchNorm2d(out_ch),
