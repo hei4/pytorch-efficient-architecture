@@ -41,9 +41,7 @@ class SingleBlock(nn.Module):
     def __init__(self, in_ch, out_ch, stride=1):
         super(SingleBlock, self).__init__()
         self.layer = nn.Sequential(
-            nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=stride, padding=1),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU()
+            nn.Conv2d(in_ch, out_ch, kernel_size=7, stride=stride, padding=3),
         )
 
     def forward(self, x):
@@ -51,18 +49,18 @@ class SingleBlock(nn.Module):
 
 
 class DoubleBlock(nn.Module):
-    def __init__(self, in_ch, out_ch, first_stride=1):
+    def __init__(self, in_ch, out_ch, downsample_rate=1):
         super(DoubleBlock, self).__init__()
         self.layer1 = nn.Sequential(
-                nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=first_stride, padding=1),
-                nn.BatchNorm2d(out_ch),
-                nn.ReLU()
+                nn.BatchNorm2d(in_ch),
+                nn.ReLU(),
+                nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=downsample_rate, padding=1)
         )
 
         self.layer2 = nn.Sequential(
-                nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1),
                 nn.BatchNorm2d(out_ch),
-                nn.ReLU()
+                nn.ReLU(),
+                nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1)
         )
 
     def forward(self, x):
@@ -72,168 +70,172 @@ class DoubleBlock(nn.Module):
 
 
 class ResidualBlock(nn.Module):
-    def __init__(self, in_ch, out_ch, first_stride=1):
+    def __init__(self, in_ch, out_ch, downsample_rate=1):
         super(ResidualBlock, self).__init__()
         self.layer1 = nn.Sequential(
-            nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=first_stride, padding=1),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU()
+            nn.BatchNorm2d(in_ch),
+            nn.ReLU(),
+            nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=downsample_rate, padding=1)
         )
 
         self.layer2 = nn.Sequential(
-            nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(out_ch)
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU(),
+            nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1)
         )
 
-        self.relu = nn.ReLU()
-
-        if first_stride != 1:
-            self.downsample = nn.Sequential(
-                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0),
-                nn.BatchNorm2d(out_ch)
+        if downsample_rate != 1:
+            self.transition_layer = nn.Sequential(
+                nn.BatchNorm2d(in_ch),
+                nn.ReLU(),
+                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=downsample_rate, padding=0),
             )
-        self.first_stride = first_stride
+        self.downsample_rate = downsample_rate
 
     def forward(self, x):
         h = self.layer1(x)
         h = self.layer2(h)
 
-        if self.first_stride != 1:
-            x = self.downsample(x)
+        if self.downsample_rate != 1:
+            x = self.transition_layer(x)
 
-        return self.relu(h + x)
+        return h + x
 
 
 class ResidualBottleneckBlock(nn.Module):
-    def __init__(self, in_ch, out_ch, first_stride=1):
+    def __init__(self, in_ch, out_ch, downsample_rate=1):
         super(ResidualBottleneckBlock, self).__init__()
         intermediate_ch = out_ch // 4
 
         self.layer1 = nn.Sequential(
-            nn.Conv2d(in_ch, intermediate_ch, kernel_size=1, stride=first_stride, padding=0),
-            nn.BatchNorm2d(intermediate_ch),
-            nn.ReLU()
+            nn.BatchNorm2d(in_ch),
+            nn.ReLU(),
+            nn.Conv2d(in_ch, intermediate_ch, kernel_size=1, stride=downsample_rate, padding=0),
         )
 
         self.layer2 = nn.Sequential(
-            nn.Conv2d(intermediate_ch, intermediate_ch, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(intermediate_ch),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.Conv2d(intermediate_ch, intermediate_ch, kernel_size=3, stride=1, padding=1)
         )
 
         self.layer3 = nn.Sequential(
-            nn.Conv2d(intermediate_ch, out_ch, kernel_size=1, stride=1, padding=0),
-            nn.BatchNorm2d(out_ch)
+            nn.BatchNorm2d(intermediate_ch),
+            nn.ReLU(),
+            nn.Conv2d(intermediate_ch, out_ch, kernel_size=1, stride=1, padding=0)
         )
 
-        self.relu = nn.ReLU()
-
-        if first_stride != 1:
-            self.downsample = nn.Sequential(
-                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0),
-                nn.BatchNorm2d(out_ch)
+        if downsample_rate != 1:
+            self.transition_layer = nn.Sequential(
+                nn.BatchNorm2d(in_ch),
+                nn.ReLU(),
+                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=downsample_rate, padding=0),
             )
-        self.first_stride = first_stride
+        self.downsample_rate = downsample_rate
 
     def forward(self, x):
         h = self.layer1(x)
         h = self.layer2(h)
         h = self.layer3(h)
 
-        if self.first_stride != 1:
-            x = self.downsample(x)
+        if self.downsample_rate != 1:
+            x = self.transition_layer(x)
 
-        return self.relu(h + x)
+        return h + x
 
 
 class ResNeXtBlock(nn.Module):
-    def __init__(self, in_ch, out_ch, first_stride=1):
+    def __init__(self, in_ch, out_ch, downsample_rate=1):
         super(ResNeXtBlock, self).__init__()
         intermediate_ch = out_ch // 4
 
         self.layer1 = nn.Sequential(
-            nn.Conv2d(in_ch, intermediate_ch, kernel_size=1, stride=first_stride, padding=0),
-            nn.BatchNorm2d(intermediate_ch),
-            nn.ReLU()
+            nn.BatchNorm2d(in_ch),
+            nn.ReLU(),
+            nn.Conv2d(in_ch, intermediate_ch, kernel_size=1, stride=downsample_rate, padding=0)
         )
 
         self.layer2 = nn.Sequential(
-            nn.Conv2d(intermediate_ch, intermediate_ch, kernel_size=3, stride=1, padding=1, groups=32),
             nn.BatchNorm2d(intermediate_ch),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.Conv2d(intermediate_ch, intermediate_ch, kernel_size=3, stride=1, padding=1, groups=32)
         )
 
         self.layer3 = nn.Sequential(
-            nn.Conv2d(intermediate_ch, out_ch, kernel_size=1, stride=1, padding=0),
-            nn.BatchNorm2d(out_ch)
+            nn.BatchNorm2d(intermediate_ch),
+            nn.ReLU(),
+            nn.Conv2d(intermediate_ch, out_ch, kernel_size=1, stride=1, padding=0)
         )
 
-        self.relu = nn.ReLU()
-
-        if first_stride != 1:
-            self.downsample = nn.Sequential(
-                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0),
-                nn.BatchNorm2d(out_ch)
+        if downsample_rate != 1:
+            self.transition_layer = nn.Sequential(
+                nn.BatchNorm2d(in_ch),
+                nn.ReLU(),
+                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=downsample_rate, padding=0),
             )
-        self.first_stride = first_stride
+        self.downsample_rate = downsample_rate
 
     def forward(self, x):
         h = self.layer1(x)
         h = self.layer2(h)
         h = self.layer3(h)
 
-        if self.first_stride != 1:
-            x = self.downsample(x)
+        if self.downsample_rate != 1:
+            x = self.transition_layer(x)
 
-        return self.relu(h + x)
+        return h + x
 
 
 class XceptionBlock(nn.Module):
-    def __init__(self, in_ch, out_ch, first_stride=1):
+    def __init__(self, in_ch, out_ch, downsample_rate=1):
         super(XceptionBlock, self).__init__()
         self.layer1 = nn.Sequential(
             # point-wise
-            nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0),
+            nn.BatchNorm2d(in_ch),
+            nn.ReLU(),
+            nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=1, padding=0),
+            # depth-wise
             nn.BatchNorm2d(out_ch),
             nn.ReLU(),
-            # depth-wise
-            nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=out_ch),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU()
+            nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=out_ch)
         )
 
         self.layer2 = nn.Sequential(
             # point-wise
-            nn.Conv2d(out_ch, out_ch, kernel_size=1, stride=1, padding=0),
             nn.BatchNorm2d(out_ch),
             nn.ReLU(),
+            nn.Conv2d(out_ch, out_ch, kernel_size=1, stride=1, padding=0),
             # depth-wise
-            nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=out_ch),
             nn.BatchNorm2d(out_ch),
+            nn.ReLU(),
+            nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=out_ch),
         )
 
-        self.relu = nn.ReLU()
-
-        if first_stride != 1:
-            self.downsample = nn.Sequential(
-                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=first_stride, padding=0),
-                nn.BatchNorm2d(out_ch)
+        if downsample_rate != 1:
+            self.transition_layer1 = nn.Sequential(
+                nn.MaxPool2d(downsample_rate)
             )
-        self.first_stride = first_stride
+        
+            self.transition_layer2 = nn.Sequential(
+                nn.BatchNorm2d(in_ch),
+                nn.ReLU(),
+                nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=downsample_rate, padding=0),
+            )
+        self.downsample_rate = downsample_rate
 
     def forward(self, x):
         h = self.layer1(x)
         h = self.layer2(h)
 
-        if self.first_stride != 1:
-            x = self.downsample(x)
+        if self.downsample_rate != 1:
+            h = self.transition_layer1(h)
+            x = self.transition_layer2(x)
 
-        return self.relu(h + x)
+        return h + x
 
 
-'''
 class CLCBlock(nn.Module):
-    def __init__(self, in_ch, out_ch, first_stride=1):
+    def __init__(self, in_ch, out_ch, downsample_rate=1):
         super(CLCBlock, self).__init__()
 
         if out_ch == 128:
@@ -245,74 +247,13 @@ class CLCBlock(nn.Module):
         elif out_ch == 1024:
             g1, g2 = 128, 8
 
-        first_g1 = g1 // first_stride
-
-        self.inplaned_layers1 = nn.ModuleList([
-            nn.Conv2d(in_ch, first_g1, kernel_size=3, stride=first_stride, padding=1, groups=first_g1) for _ in range(g2)
-        ])
-
-        self.gruop_layer1 = nn.Sequential(
+        first_g1 = g1 // downsample_rate
+        self.inplaned_layer1 = nn.Sequential(
             nn.BatchNorm2d(in_ch),
             nn.ReLU(),
-            nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=1, padding=0, groups=g2),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU()
+            nn.Conv2d(in_ch, in_ch, kernel_size=3, stride=downsample_rate, padding=1, groups=first_g1)
         )
 
-        self.inplaned_layers2 = nn.ModuleList([
-            nn.Conv2d(out_ch, g1, kernel_size=3, stride=1, padding=1, groups=g1) for _ in range(g2)
-        ])
-
-        self.gruop_layer2 = nn.Sequential(
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU(),
-            nn.Conv2d(out_ch, out_ch, kernel_size=1, stride=1, padding=0, groups=g2),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU()
-        )
-
-    def forward(self, x):
-        print(0, x.shape)
-        h_list = []
-        for inplaned_layer in self.inplaned_layers1:
-            h_list.append(inplaned_layer(x))
-        print(1, h_list[0].shape)
-
-        h = torch.cat(h_list, dim=1)
-        print(2, h.shape)
-        h = self.gruop_layer1(h)
-        print(3, h.shape)
-
-        h_list = []
-        for inplaned_layer in self.inplaned_layers2:
-            h_list.append(inplaned_layer(h))
-        print(4, h_list[0].shape)
-
-        h = torch.cat(h_list, dim=1)
-        print(5, h.shape)
-        h = self.gruop_layer2(h)
-        print(6, h.shape)
-        print()
-
-        return h
-'''
-class CLCBlock(nn.Module):
-    def __init__(self, in_ch, out_ch, first_stride=1):
-        super(CLCBlock, self).__init__()
-
-        if out_ch == 128:
-            g1, g2 = 32, 4
-        elif out_ch == 256:
-            g1, g2 = 64, 4
-        elif out_ch == 512:
-            g1, g2 = 64, 8
-        elif out_ch == 1024:
-            g1, g2 = 128, 8
-
-        first_g1 = g1 // first_stride
-        self.inplaned_layer1 = nn.Conv2d(in_ch, in_ch, kernel_size=3, stride=first_stride, padding=1, groups=first_g1)
-
-        # index = torch.arange(0, in_ch, g2)  # g2 = ch_per_group
         self.index_list1 = []
         for i in range(g2):
             self.index_list1.append(list(range(i, in_ch, g2)))
@@ -320,25 +261,23 @@ class CLCBlock(nn.Module):
         self.gruop_layer1 = nn.Sequential(
             nn.BatchNorm2d(in_ch),
             nn.ReLU(),
-            nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=1, padding=0, groups=g2),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU()
+            nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=1, padding=0, groups=g2)
         )
 
-        self.inplaned_layer2 = nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=g1)
+        self.inplaned_layer2 = nn.Sequential(
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU(),
+            nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=g1)
+        )
 
-        #index = torch.arange(0, out_ch, g2)  # g2 = ch_per_group
         self.index_list2 = []
         for i in range(g2):
-            #self.index_list2.append(index + i)
             self.index_list2.append(list(range(i, out_ch, g2)))
 
         self.gruop_layer2 = nn.Sequential(
             nn.BatchNorm2d(out_ch),
             nn.ReLU(),
             nn.Conv2d(out_ch, out_ch, kernel_size=1, stride=1, padding=0, groups=g2),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU()
         )
 
     def forward(self, x):
@@ -363,27 +302,76 @@ class CLCBlock(nn.Module):
         return h
 
 
+class DenseBlock(nn.Module):
+    def __init__(self, in_ch, out_ch, downsample_rate, growth_rate):
+        super(DenseBlock, self).__init__()
+        intermediate_out = (out_ch - in_ch) // growth_rate
+        self.growth_rate = growth_rate
+
+        self.dense_layers = nn.ModuleList()
+        for i in range(growth_rate):
+            intermediate_in = in_ch + i * intermediate_out
+
+            self.dense_layers.add_module('block_{}'.format(i), nn.Sequential(
+                nn.BatchNorm2d(intermediate_in),
+                nn.ReLU(),
+                nn.Conv2d(intermediate_in, intermediate_out, kernel_size=1, stride=1, padding=0),
+                nn.BatchNorm2d(intermediate_out),
+                nn.ReLU(),
+                nn.Conv2d(intermediate_out, intermediate_out, kernel_size=3, stride=1, padding=1)
+            ))
+
+        self.transition_layer = nn.Sequential(
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU(),
+            nn.Conv2d(out_ch, out_ch, kernel_size=1, stride=1, padding=0),
+            nn.MaxPool2d(downsample_rate)
+        )
+
+    def forward(self, x):
+        for dense_layer in self.dense_layers:
+            h = dense_layer(x)
+            x = torch.cat([x, h], dim=1)
+
+        h = self.transition_layer(x)
+        return h
+
 
 ################################################################
 # NEURAL NETWORKS
 ################################################################
+def create_stage(block_class, in_ch, out_ch, n_blocks=4):
+    stage = nn.Sequential()
+
+    if block_class == DenseBlock:
+        stage.add_module('stage_dense', block_class(in_ch, out_ch, downsample_rate=2, growth_rate=2*n_blocks))
+
+    else:
+        for i in range(n_blocks):
+            if i == 0:
+                stage.add_module('block_{}'.format(i), block_class(in_ch, out_ch, downsample_rate=2))
+            else:
+                stage.add_module('block_{}'.format(i), block_class(out_ch, out_ch))
+
+    return stage
+
+
 class BaseArchitecture(nn.Module):
     def __init__(self, block_class, ch_list):
         super(BaseArchitecture, self).__init__()
-        self.blocks = nn.ModuleList()
+        self.stages = nn.ModuleList()
         for i in range(len(ch_list)-1):
             print('blocks[{}]: {} -> {}'.format(i, ch_list[i], ch_list[i+1]))
 
             if i == 0:
-                self.blocks.append(SingleBlock(ch_list[i], ch_list[i+1], stride=2))
+                self.stages.append(SingleBlock(ch_list[i], ch_list[i+1], stride=2))
             elif i == len(ch_list) - 2:
-                self.blocks.append(GAPBlock(ch_list[i], ch_list[i+1]))
-            elif i % 2 == 1:
-                self.blocks.append(block_class(ch_list[i], ch_list[i + 1], first_stride=2))
+                self.stages.append(GAPBlock(ch_list[i], ch_list[i+1]))
             else:
-                self.blocks.append(block_class(ch_list[i], ch_list[i + 1]))
+                stage = create_stage(block_class, ch_list[i], ch_list[i+1])
+                self.stages.append(stage)
 
     def forward(self, x):
-        for block in self.blocks:
+        for block in self.stages:
             x = block(x)
         return x

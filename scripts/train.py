@@ -14,7 +14,7 @@ from util import *
 def main():
     parser = argparse.ArgumentParser(description='pytorch efficient architecture')
 
-    parser.add_argument('--batch', '-b', type=int, default=50,
+    parser.add_argument('--batch', '-b', type=int, default=32,
                         help='Number of images in each mini-batch')
     parser.add_argument('--epoch', '-e', type=int, default=100,
                         help='Number of sweeps over the dataset to train')
@@ -22,7 +22,7 @@ def main():
                         choices=['mnist', 'cifar10', 'stl10', 'food101'],
                         help='The name of using dataset.')
     parser.add_argument('--block', default='plain',
-                        choices=['plain', 'residual', 'residual_bottleneck', 'resnext', 'xception', 'clc'],
+                        choices=['plain', 'residual', 'residual_bottleneck', 'resnext', 'xception', 'clc', 'dense'],
                         help='The type of using block.')
 
     args = parser.parse_args()
@@ -45,6 +45,8 @@ def main():
         block = XceptionBlock
     elif block_type == 'clc':
         block = CLCBlock
+    elif block_type == 'dense':
+        block = DenseBlock
 
     train_set, valid_set, ch_list = create_dataset(dataset_name)
     print('training data size: ', len(train_set))

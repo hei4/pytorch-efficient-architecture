@@ -49,7 +49,7 @@ class FoodDataset(Dataset):
 
 def create_dataset(dataset_name):
     if dataset_name == 'mnist':
-        ch_list = [1, 64, 128, 128, 10]
+        ch_list = [1, 64, 128, 10]
 
         transform = transforms.Compose([
             transforms.ToTensor(),
@@ -60,7 +60,7 @@ def create_dataset(dataset_name):
         valid_set = datasets.MNIST(root='../data/mnist_root', train=False, download=True, transform=transform)
 
     elif dataset_name == 'cifar10':
-        ch_list = [3, 64, 128, 128, 256, 256, 10]
+        ch_list = [3, 64, 128, 256, 10]
 
         train_transform = transforms.Compose([
             transforms.RandomHorizontalFlip(),
@@ -78,7 +78,7 @@ def create_dataset(dataset_name):
         valid_set = datasets.CIFAR10(root='../data/cifar10_root', train=False, download=True, transform=valid_transform)
 
     elif dataset_name == 'stl10':
-        ch_list = [3, 64, 128, 128, 256, 256, 512, 512, 10]
+        ch_list = [3, 64, 128, 256, 512, 10]
 
         train_transform = transforms.Compose([
             transforms.RandomHorizontalFlip(),
@@ -96,7 +96,7 @@ def create_dataset(dataset_name):
         valid_set = datasets.STL10(root='../data/stl10_root', split='test', download=True, transform=valid_transform)
 
     elif dataset_name == 'food101':
-        ch_list = [3, 64, 128, 128, 256, 256, 512, 512, 1024, 1024, 101]
+        ch_list = [3, 64, 128, 256, 512, 1024, 101]
 
         train_transform = transforms.Compose([
             transforms.RandomResizedCrop(224),
