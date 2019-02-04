@@ -190,24 +190,20 @@ class XceptionBlock(nn.Module):
     def __init__(self, in_ch, out_ch, downsample_rate=1):
         super(XceptionBlock, self).__init__()
         self.layer1 = nn.Sequential(
-            # point-wise
             nn.BatchNorm2d(in_ch),
             nn.ReLU(),
+            # point-wise
             nn.Conv2d(in_ch, out_ch, kernel_size=1, stride=1, padding=0),
             # depth-wise
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU(),
             nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=out_ch)
         )
 
         self.layer2 = nn.Sequential(
-            # point-wise
             nn.BatchNorm2d(out_ch),
             nn.ReLU(),
+            # point-wise
             nn.Conv2d(out_ch, out_ch, kernel_size=1, stride=1, padding=0),
             # depth-wise
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU(),
             nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=out_ch),
         )
 
@@ -334,6 +330,38 @@ class DenseBlock(nn.Module):
             x = torch.cat([x, h], dim=1)
 
         h = self.transition_layer(x)
+        return h
+
+
+class MobileV1Block(nn.Module):
+    def __init__(self, in_ch, out_ch, downsample_rate=1):
+        super(MobileV1Block, self).__init__()
+        self.layer1 = nn.Sequential(
+            # depth-wise
+            nn.BatchNorm2d(in_ch),
+            nn.ReLU(),
+            nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=downsample_rate, padding=1, groups=in_ch),
+            # point-wise
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU(),
+            nn.Conv2d(out_ch, out_ch, kernel_size=1, stride=1, padding=0)
+        )
+
+        self.layer2 = nn.Sequential(
+            # depth-wise
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU(),
+            nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1, groups=out_ch),
+            # point-wise
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU(),
+            nn.Conv2d(out_ch, out_ch, kernel_size=1, stride=1, padding=0),
+        )
+
+    def forward(self, x):
+        h = self.layer1(x)
+        h = self.layer2(h)
+
         return h
 
 

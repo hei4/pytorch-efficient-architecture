@@ -22,7 +22,8 @@ def main():
                         choices=['mnist', 'cifar10', 'stl10', 'food101'],
                         help='The name of using dataset.')
     parser.add_argument('--block', default='plain',
-                        choices=['plain', 'residual', 'residual_bottleneck', 'resnext', 'xception', 'clc', 'dense'],
+                        choices=['plain', 'residual', 'residual_bottleneck', 'resnext',
+                                 'xception', 'dense', 'mobile_v1', 'clc'],
                         help='The type of using block.')
 
     args = parser.parse_args()
@@ -43,10 +44,12 @@ def main():
         block = ResNeXtBlock
     elif block_type == 'xception':
         block = XceptionBlock
-    elif block_type == 'clc':
-        block = CLCBlock
     elif block_type == 'dense':
         block = DenseBlock
+    elif block_type == 'mobile_v1':
+        block = MobileV1Block
+    elif block_type == 'clc':
+        block = CLCBlock
 
     train_set, valid_set, ch_list = create_dataset(dataset_name)
     print('training data size: ', len(train_set))
