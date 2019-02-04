@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 cmap = plt.get_cmap('tab10')
 
 dataset_list = ['mnist', 'cifar10', 'stl10']
-block_list = ['plain', 'residual', 'residual_bottleneck', 'resnext', 'xception', 'clc', 'dense']
+block_list = ['plain', 'residual', 'residual_bottleneck', 'resnext', 'xception', 'dense']
 
 for dataset_name in dataset_list:
     df_dict = {}
@@ -23,7 +23,7 @@ for dataset_name in dataset_list:
     ax.set_ylabel('File size [KB]')
     ax.tick_params(labelbottom=False)
     ax.legend()
-    plt.title('{} file size of trained models'.format(dataset_name))
+    plt.title('file sizes of {} trained models'.format(dataset_name))
     plt.savefig('../images/{}_size.png'.format(dataset_name))
     plt.close()
 
