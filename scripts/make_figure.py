@@ -7,7 +7,7 @@ cmap = plt.get_cmap('tab10')
 
 dataset_list = ['mnist', 'cifar10', 'stl10']
 block_list = ['plain', 'residual', 'bottleneck', 'resnext',
-              'xception', 'dense', 'mobile_v1', 'mobile_v2', 'shuffle']
+              'xception', 'dense', 'mobile_v1', 'shuffle']
 
 for dataset_name in dataset_list:
     df_dict = {}
@@ -87,9 +87,9 @@ for dataset_name in dataset_list:
                         df_dict[block_type]['train/time_mean'] - df_dict[block_type]['train/time_std'],
                         color=cmap(i), alpha=0.2)
     ax.set_xlabel('Number of training epochs')
-    ax.set_ylabel('Inference time [s]')
+    ax.set_ylabel('Forward propergation time [s]')
     ax.legend()
-    plt.title('{} training/inference time'.format(dataset_name))
+    plt.title('{} training/forward propergation time'.format(dataset_name))
     plt.savefig('../images/{}_train_time.png'.format(dataset_name))
     plt.close()
 
@@ -105,8 +105,8 @@ for dataset_name in dataset_list:
                         color=cmap(i), alpha=0.2)
     ax.set_ylim(ymin=ymin, ymax=ymax)
     ax.set_xlabel('Number of training epochs')
-    ax.set_ylabel('Inference time [s]')
+    ax.set_ylabel('Forward propergation time [s]')
     ax.legend()
-    plt.title('{} validation/inference time'.format(dataset_name))
+    plt.title('{} validation/forward propergation time'.format(dataset_name))
     plt.savefig('../images/{}_valid_time.png'.format(dataset_name))
     plt.close()
