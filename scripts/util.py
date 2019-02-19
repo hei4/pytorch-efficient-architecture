@@ -99,7 +99,8 @@ def create_dataset(dataset_name):
         ch_list = [3, 64, 128, 256, 512, 1024, 101]
 
         train_transform = transforms.Compose([
-            transforms.RandomResizedCrop(224),
+            transforms.Resize(256),
+            transforms.RandomCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))

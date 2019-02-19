@@ -6,7 +6,8 @@ from matplotlib import pyplot as plt
 cmap = plt.get_cmap('tab10')
 
 dataset_list = ['mnist', 'cifar10', 'stl10']
-block_list = ['plain', 'residual', 'residual_bottleneck', 'resnext', 'xception', 'dense', 'mobile_v1']
+block_list = ['plain', 'residual', 'bottleneck', 'resnext',
+              'xception', 'dense', 'mobile_v1', 'mobile_v2', 'shuffle']
 
 for dataset_name in dataset_list:
     df_dict = {}

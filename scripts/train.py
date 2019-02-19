@@ -22,8 +22,8 @@ def main():
                         choices=['mnist', 'cifar10', 'stl10', 'food101'],
                         help='The name of using dataset.')
     parser.add_argument('--block', default='plain',
-                        choices=['plain', 'residual', 'residual_bottleneck', 'resnext',
-                                 'xception', 'dense', 'mobile_v1', 'clc'],
+                        choices=['plain', 'residual', 'bottleneck', 'resnext',
+                                 'xception', 'dense', 'mobile_v1', 'mobile_v2', 'shuffle'],
                         help='The type of using block.')
 
     args = parser.parse_args()
@@ -38,8 +38,8 @@ def main():
         block = DoubleBlock
     elif block_type == 'residual':
         block = ResidualBlock
-    elif block_type == 'residual_bottleneck':
-        block = ResidualBottleneckBlock
+    elif block_type == 'bottleneck':
+        block = BottleneckBlock
     elif block_type == 'resnext':
         block = ResNeXtBlock
     elif block_type == 'xception':
@@ -48,8 +48,10 @@ def main():
         block = DenseBlock
     elif block_type == 'mobile_v1':
         block = MobileV1Block
-    elif block_type == 'clc':
-        block = CLCBlock
+    elif block_type == 'mobile_v2':
+        block = MobileV2Block
+    elif block_type == 'shuffle':
+        block = ShuffleBlock
 
     train_set, valid_set, ch_list = create_dataset(dataset_name)
     print('training data size: ', len(train_set))
@@ -86,9 +88,7 @@ def main():
         inference_time = []
         for itr, data in enumerate(train_loader, 0):
             images, labels = data
-
             train_true.extend(labels.tolist())
-
             images, labels = images.to(device), labels.to(device)  # for GPU
 
             optimizer.zero_grad()
