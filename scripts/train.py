@@ -172,7 +172,7 @@ def main():
                        'valid/time_std': valid_time_std_list})
 
     print('Save Training Log')
-    df.to_csv('../logs/{}_{}.csv'.format(dataset_name, block_type), index=False)
+    df.to_csv('../logs/train/{}_{}.csv'.format(dataset_name, block_type), index=False)
 
 
 if __name__ == '__main__':

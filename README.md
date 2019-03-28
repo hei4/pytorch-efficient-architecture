@@ -32,6 +32,15 @@ Every stage has 4 blocks.
 
   - [Huang, Gao et al. “Densely Connected Convolutional Networks.” *2017 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)* (2017): 2261-2269.](http://openaccess.thecvf.com/content_cvpr_2017/html/Huang_Densely_Connected_Convolutional_CVPR_2017_paper.html)
 
+- mobile type
+
+  - [Howard, Andrew G. et al. “MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications.” CoRR abs/1704.04861 (2017): n. pag.](https://arxiv.org/abs/1704.04861)
+
+- shuffle type
+
+  - [Zhang, Xiangyu et al. “ShuffleNet: An Extremely Efficient Convolutional Neural Network for Mobile Devices.” 2018 IEEE/CVF Conference on Computer Vision and Pattern Recognition (2018): 6848-6856.](https://arxiv.org/abs/1707.01083)
+
+  
 
 
 ## Experiments
@@ -45,6 +54,10 @@ Every stage has 4 blocks.
 
 ![MNIST file size](images/mnist_size.png "MNIST File size of trained models")
 
+![MNIST cpu time](images/mnist_cpu_time.png"MNIST Inference time by CPU")
+
+![MNIST gpu time](images/mnist_gpu_time.png"MNIST Inference time by GPU")
+
 ### CIFAR-10
 |training|validation|
 |---|---|
@@ -54,6 +67,11 @@ Every stage has 4 blocks.
 
 ![CIFAR-10 file size](images/cifar10_size.png "CIFAR-10 File size of trained models")
 
+![CIFAR-10 cpu time](images/cifar10_cpu_time.png"CIFAR-10 Inference time by CPU")
+
+![CIFAR-10 gpu time](images/cifar10_gpu_time.png"CIFAR-10 Inference time by GPU")
+
+
 ### STL-10
 |training|validation|
 |---|---|
@@ -62,6 +80,11 @@ Every stage has 4 blocks.
 |![STL-10 train time](images/stl10_train_time.png "STL-10 training inference time")|![STL-10 valid time](images/stl10_valid_time.png "STL-10 validation inference time")|
 
 ![STL-10 file size](images/stl10_size.png "STL-10 File size of trained models")
+
+![STL-10 cpu time](images/stl10_cpu_time.png"STL-10 Inference time by CPU")
+
+![STL-10 gpu time](images/stl10_gpu_time.png"STL-10 Inference time by GPU")
+
 
 ### Food-101
 UNDER CONSTRUCTION.

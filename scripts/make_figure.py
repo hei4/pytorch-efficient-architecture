@@ -10,11 +10,43 @@ block_list = ['plain', 'residual', 'bottleneck', 'resnext',
               'xception', 'dense', 'mobile_v1', 'shuffle']
 
 for dataset_name in dataset_list:
-    df_dict = {}
+    print(dataset_name)
+
+    train_dict = {}
     size_dict = {}
+    time_dict = {}
     for block_type in block_list:
-        df_dict[block_type] = pd.read_csv('../logs/{}_{}.csv'.format(dataset_name, block_type))
+        train_dict[block_type] = pd.read_csv('../logs/train/{}_{}.csv'.format(dataset_name, block_type))
         size_dict[block_type] = os.path.getsize('../models/{}_{}.pth'.format(dataset_name, block_type))
+        time_dict[block_type] = pd.read_csv('../logs/time/{}_{}.csv'.format(dataset_name, block_type))
+
+    gpu_time_list = []
+    cpu_time_list = []
+    for block_type in block_list:
+        gpu_time_list.append(time_dict[block_type]['gpu/time'])
+        cpu_time_list.append(time_dict[block_type]['cpu/time'])
+
+    # CPU inference time
+    fig, ax = plt.subplots()
+    ax.boxplot(cpu_time_list, labels=block_list, showfliers=False)
+    ax.set_ylim(bottom=0)
+    ax.set_xlabel('Block type')
+    ax.set_ylabel('Inference time [s/image]')
+    plt.title('CPU inference time of {} trained models'.format(dataset_name))
+    plt.savefig('../images/{}_cpu_time.png'.format(dataset_name))
+    plt.close()
+
+    _, _, ymin, ymax = ax.axis()
+
+    # GPU inference time
+    fig, ax = plt.subplots()
+    ax.boxplot(gpu_time_list, labels=block_list, showfliers=False)
+    ax.set_ylim(bottom=0, top=ymax)
+    ax.set_xlabel('Block type')
+    ax.set_ylabel('Inference time [s/image]')
+    plt.title('GPU inference time of {} trained models'.format(dataset_name))
+    plt.savefig('../images/{}_gpu_time.png'.format(dataset_name))
+    plt.close()
 
     # model size
     fig, ax = plt.subplots()
@@ -31,7 +63,7 @@ for dataset_name in dataset_list:
     # train/acc.
     fig, ax = plt.subplots()
     for block_type in block_list:
-        ax.plot(df_dict[block_type]['epoch'], df_dict[block_type]['train/accuracy'], label=block_type)
+        ax.plot(train_dict[block_type]['epoch'], train_dict[block_type]['train/accuracy'], label=block_type)
     ax.set_xlabel('Number of training epochs')
     ax.set_ylabel('Accuracy')
     ax.legend()
@@ -44,8 +76,8 @@ for dataset_name in dataset_list:
     # valid/acc.
     fig, ax = plt.subplots()
     for block_type in block_list:
-        ax.plot(df_dict[block_type]['epoch'], df_dict[block_type]['valid/accuracy'], label=block_type)
-    ax.set_ylim(ymin=ymin, ymax=ymax)
+        ax.plot(train_dict[block_type]['epoch'], train_dict[block_type]['valid/accuracy'], label=block_type)
+    ax.set_ylim(bottom=ymin, top=ymax)
     ax.set_xlabel('Number of training epochs')
     ax.set_ylabel('Accuracy')
     ax.legend()
@@ -56,7 +88,7 @@ for dataset_name in dataset_list:
     # train/loss
     fig, ax = plt.subplots()
     for block_type in block_list:
-        ax.plot(df_dict[block_type]['epoch'], df_dict[block_type]['train/loss'], label=block_type)
+        ax.plot(train_dict[block_type]['epoch'], train_dict[block_type]['train/loss'], label=block_type)
     ax.set_xlabel('Number of training epochs')
     ax.set_ylabel('Loss')
     ax.legend()
@@ -69,8 +101,8 @@ for dataset_name in dataset_list:
     # valid/loss
     fig, ax = plt.subplots()
     for block_type in block_list:
-        ax.plot(df_dict[block_type]['epoch'], df_dict[block_type]['valid/loss'], label=block_type)
-    ax.set_ylim(ymin=ymin, ymax=ymax)
+        ax.plot(train_dict[block_type]['epoch'], train_dict[block_type]['valid/loss'], label=block_type)
+    ax.set_ylim(bottom=ymin, top=ymax)
     ax.set_xlabel('Number of training epochs')
     ax.set_ylabel('Loss')
     ax.legend()
@@ -81,11 +113,12 @@ for dataset_name in dataset_list:
     # train/time
     fig, ax = plt.subplots()
     for i, block_type in enumerate(block_list):
-        ax.plot(df_dict[block_type]['epoch'], df_dict[block_type]['train/time_mean'], label=block_type, color=cmap(i))
-        ax.fill_between(df_dict[block_type]['epoch'],
-                        df_dict[block_type]['train/time_mean'] + df_dict[block_type]['train/time_std'],
-                        df_dict[block_type]['train/time_mean'] - df_dict[block_type]['train/time_std'],
+        ax.plot(train_dict[block_type]['epoch'], train_dict[block_type]['train/time_mean'], label=block_type, color=cmap(i))
+        ax.fill_between(train_dict[block_type]['epoch'],
+                        train_dict[block_type]['train/time_mean'] + train_dict[block_type]['train/time_std'],
+                        train_dict[block_type]['train/time_mean'] - train_dict[block_type]['train/time_std'],
                         color=cmap(i), alpha=0.2)
+    ax.set_ylim(bottom=0)
     ax.set_xlabel('Number of training epochs')
     ax.set_ylabel('Forward propergation time [s]')
     ax.legend()
@@ -98,12 +131,12 @@ for dataset_name in dataset_list:
     # valid/time
     fig, ax = plt.subplots()
     for i, block_type in enumerate(block_list):
-        ax.plot(df_dict[block_type]['epoch'], df_dict[block_type]['valid/time_mean'], label=block_type, color=cmap(i))
-        ax.fill_between(df_dict[block_type]['epoch'],
-                        df_dict[block_type]['valid/time_mean'] + df_dict[block_type]['valid/time_std'],
-                        df_dict[block_type]['valid/time_mean'] - df_dict[block_type]['valid/time_std'],
+        ax.plot(train_dict[block_type]['epoch'], train_dict[block_type]['valid/time_mean'], label=block_type, color=cmap(i))
+        ax.fill_between(train_dict[block_type]['epoch'],
+                        train_dict[block_type]['valid/time_mean'] + train_dict[block_type]['valid/time_std'],
+                        train_dict[block_type]['valid/time_mean'] - train_dict[block_type]['valid/time_std'],
                         color=cmap(i), alpha=0.2)
-    ax.set_ylim(ymin=ymin, ymax=ymax)
+    ax.set_ylim(bottom=0, top=ymax)
     ax.set_xlabel('Number of training epochs')
     ax.set_ylabel('Forward propergation time [s]')
     ax.legend()
