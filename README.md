@@ -54,9 +54,9 @@ Every stage has 4 blocks.
 
 ![MNIST file size](images/mnist_size.png "MNIST File size of trained models")
 
-![MNIST cpu time](images/mnist_cpu_time.png"MNIST Inference time by CPU")
+![MNIST cpu time](images/mnist_cpu_time.png "MNIST Inference time by CPU")
 
-![MNIST gpu time](images/mnist_gpu_time.png"MNIST Inference time by GPU")
+![MNIST gpu time](images/mnist_gpu_time.png "MNIST Inference time by GPU")
 
 ### CIFAR-10
 |training|validation|
@@ -67,9 +67,9 @@ Every stage has 4 blocks.
 
 ![CIFAR-10 file size](images/cifar10_size.png "CIFAR-10 File size of trained models")
 
-![CIFAR-10 cpu time](images/cifar10_cpu_time.png"CIFAR-10 Inference time by CPU")
+![CIFAR-10 cpu time](images/cifar10_cpu_time.png "CIFAR-10 Inference time by CPU")
 
-![CIFAR-10 gpu time](images/cifar10_gpu_time.png"CIFAR-10 Inference time by GPU")
+![CIFAR-10 gpu time](images/cifar10_gpu_time.png "CIFAR-10 Inference time by GPU")
 
 
 ### STL-10
@@ -81,9 +81,9 @@ Every stage has 4 blocks.
 
 ![STL-10 file size](images/stl10_size.png "STL-10 File size of trained models")
 
-![STL-10 cpu time](images/stl10_cpu_time.png"STL-10 Inference time by CPU")
+![STL-10 cpu time](images/stl10_cpu_time.png "STL-10 Inference time by CPU")
 
-![STL-10 gpu time](images/stl10_gpu_time.png"STL-10 Inference time by GPU")
+![STL-10 gpu time](images/stl10_gpu_time.png "STL-10 Inference time by GPU")
 
 
 ### Food-101
